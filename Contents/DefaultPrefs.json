@@ -1,0 +1,8 @@
+[
+  {
+    "id": "feedToken",
+    "label": "Feed Token",
+    "type": "text",
+    "default": "Get your feedToken from treehouse.com"
+  }
+]
