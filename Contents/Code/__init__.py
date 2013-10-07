@@ -1,4 +1,5 @@
 import re, string, urllib2, datetime, time
+from config import CATEGORIES
 
 TH_PREFIX        = '/video/treehouse'
 TH_FEED_URL      = 'http://teamtreehouse.com/library/%s.rss?feed_token=%s'
@@ -7,29 +8,6 @@ FORMATS          = ['Standard', 'HD']
 NAME             = 'Treehouse'
 ICON             = 'icon-default.png'
 ART              = 'art-default.png'
-
-CATEGORIES = {
-  'the-treehouse-show': {
-    'title': 'The Treehouse Show',
-    'icon': R('Treehouse_Show.png')
-  },
-  'treehouse-quick-tips': {
-    'title': 'Treehouse Quick Tips',
-    'icon': R('badges_QuickTips.png')
-  },
-  'treehouse-workshops': {
-    'title': 'Treehouse Workshops',
-    'icon': R('badges_workshops.png')
-  },
-  'design-and-development': {
-    'title': 'Design and Development',
-    'icon': R('badges_bonus_devdesign.png')
-  },
-  'exercise-your-creative': {
-    'title': 'Exercise Your Creative',
-    'icon': R('EYC.png')
-  }
-}
 
 def buildUrl( showName ):
   return TH_FEED_URL % ( showName, Prefs['feedToken'] )
@@ -48,19 +26,30 @@ def Start():
 ##########################################################################################
 def MainMenu():
   dir = ObjectContainer(title1=NAME)
-  for index in CATEGORIES:
+  for name in CATEGORIES:
+    Log.Debug(name)
     dir.add(
       DirectoryObject(
-        key=Callback(GetFeed, name=index),
-        title=CATEGORIES[index]['title'],
-        thumb=CATEGORIES[index]['icon']))
+        key=Callback(CategoryMenu, name=name, categories=CATEGORIES[name]),
+        title=name))
   dir.add(PrefsObject(title=L("Preferences...")))
   return dir
 
 ##########################################################################################
-def GetFeed(name):
+def CategoryMenu(name, categories):
+  dir = ObjectContainer(title1=NAME, title2=name)
+  for category in categories:
+    dir.add(
+      DirectoryObject(
+        key=Callback(GetFeed, path=category['path']),
+        title=category['title'],
+        thumb=R(category['icon'])))
+  return dir
+
+##########################################################################################
+def GetFeed(path):
   try:
-    request = HTTP.Request(buildUrl(name)) #, errors='ignore'
+    request = HTTP.Request(buildUrl(path)) #, errors='ignore'
     feedContent = request.content
   except:
     return ObjectContainer(header=L("Error"), message=L("Check your feedToken!"))
